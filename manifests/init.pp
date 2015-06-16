@@ -48,7 +48,7 @@ class autofs (
   }
 
   if $extra_packages != [] {
-    ensure_packages($pacakges)
+    ensure_packages($extra_packages)
   }
 
   file { $map_files_dir :
