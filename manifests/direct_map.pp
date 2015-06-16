@@ -46,11 +46,10 @@ define autofs::direct_map (
 
   if $map_file {
     validate_absolute_path($map_file)
-    $_map_file = $map_file
+    $map_path = $map_file
     $_require = undef
   } else {
-    $basename = basename($mountpoint)
-    $_map_file = "${autofs::map_files_dir}/${basename}"
+    $map_path = "${autofs::map_files_dir}/auto.direct"
     $_require = File[$autofs::map_files_dir]
   }
 
@@ -61,19 +60,18 @@ define autofs::direct_map (
     $content = "${mountpoint} ${device}"
   }
 
-  concat::fragment { "autofs::direct_map ${_map_file}":
+  autofs::map_file { "autofs::direct_map $map_path":
     ensure  => $ensure,
-    target  => $autofs::auto_master,
-    content => "/- ${_map_file}",
-  }
-
-  file { $_map_file :
-    ensure  => $ensure,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
+    path    => $map_path,
     content => $content,
     require => $_require,
-    tag     => ['map_file'],
+  }
+
+  concat::fragment { "autofs::direct_map ${map_path}:${content}":
+    ensure  => $ensure,
+    target  => $autofs::auto_master,
+    content => "/- ${map_path}",
+    require => Autofs::Map_file["autofs::direct_map $map_path"],
+    notify  => Service['autofs'],
   }
 }
