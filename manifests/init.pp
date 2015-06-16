@@ -19,7 +19,8 @@
 # [*map_files_dir*]
 #   Absolute file path where the autofs map files are located.
 #
-#   Defaults to `/etc/auto.master.d`
+#   This directory is not managed by this module, but is assumed to exist and
+#   be accessable as autofs map file will be put there.
 #
 # [*service_name*]
 #   Name of the distribution specific autofs service.
@@ -36,7 +37,7 @@ class autofs (
   $package_name   = hiera("${module_name}::pacakge_name", 'autofs'),
   $extra_packages = hiera_array("${module_name}::extra_packages", []),
   $auto_master    = hiera("${module_name}::auto_master", '/etc/auto.master'),
-  $map_files_dir  = hiera("${module_name}::map_files_dir", '/etc/auto.master.d'),
+  $map_files_dir  = hiera("${module_name}::map_files_dir", '/etc'),
   $service_name   = hiera("${module_name}::service_name", 'autofs'),
 ) {
   validate_string($package_name, $service_name)
@@ -49,12 +50,6 @@ class autofs (
 
   if $extra_packages != [] {
     ensure_packages($extra_packages)
-  }
-
-  file { $map_files_dir:
-    ensure => directory,
-    owner  => 'root',
-    group  => 'root',
   }
 
   concat { $auto_master:
