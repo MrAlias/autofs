@@ -1,41 +1,74 @@
 # == Class: autofs
 #
-# Full description of class autofs here.
+# Manages the autofs package, templates, and service.
 #
 # === Parameters
 #
-# Document parameters here.
+# [*package_name*]
+#   Name of the distribution specific autofs package.
 #
-# [*sample_parameter*]
-#   Explanation of what this parameter affects and what it defaults to.
-#   e.g. "Specify one or more upstream ntp servers as an array."
+# [*extra_packages*]
+#   Array of packages to install.  By default only the autofs packages is
+#   manages by this module.  If extra support is desired for autofs
+#   (like LDAP or Hesiod), then the needed packages (i.e. autofs-hesiod,
+#   autofs-ldap, ... ) can be specified here.
 #
-# === Variables
+# [*auto_master*]
+#   Absolute file path where the master autofs template is located.
 #
-# Here you should define a list of variables that this module would require.
+# [*map_files_dir*]
+#   Absolute file path where the autofs map files are located.
 #
-# [*sample_variable*]
-#   Explanation of how this variable affects the function of this class and if
-#   it has a default. e.g. "The parameter enc_ntp_servers must be set by the
-#   External Node Classifier as a comma separated list of hostnames." (Note,
-#   global variables should be avoided in favor of class parameters as
-#   of Puppet 2.6.)
+#   Defaults to `/etc/auto.master.d`
 #
-# === Examples
-#
-#  class { 'autofs':
-#    servers => [ 'pool.ntp.org', 'ntp.local.company.com' ],
-#  }
+# [*service_name*]
+#   Name of the distribution specific autofs service.
 #
 # === Authors
 #
-# Author Name <author@domain.com>
+# Tyler Yahn <codingalias@gmail.com>
 #
 # === Copyright
 #
-# Copyright 2015 Your name here, unless otherwise noted.
+# Copyright 2015 Tyler Yahn
 #
-class autofs {
+class autofs (
+  $package_name   = hiera("${module_name}::pacakge_name", 'autofs'),
+  $extra_packages = hiera_array("${module_name}::extra_packages", []),
+  $auto_master    = hiera("${module_name}::auto_master", '/etc/auto.master'),
+  $map_files_dir  = hiera("${module_name}::map_files_dir", '/etc/auto.master.d'),
+  $service_name   = hiera("${module_name}::service_name", 'autofs'),
+) {
+  validate_string($package_name, $service_name)
+  validate_absolute_path($auto_master)
 
+  package { $package_name :
+    ensure => installed,
+    alias  => 'autofs',
+  }
 
+  if $extra_packages != [] {
+    ensure_packages($pacakges)
+  }
+
+  file { $map_files_dir :
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+  }
+
+  concat { $auto_master :
+    ensure  => present,
+    warn    => true,
+    require => Package['autofs'],
+    notify  => Service['autofs'],
+  }
+
+  service { $service_name :
+    ensure => running,
+    enable => true,
+    alias  => 'autofs',
+  }
+
+  File<| tag == 'map_file' |> ~> Service['autofs']
 }
