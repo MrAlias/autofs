@@ -18,7 +18,7 @@
 #   Defaults to `$name`.
 #
 # [*options*]
-#   String of mount options used in the map definition.
+#   Array of mount options used in the map definition.
 #
 # [*map_file*]
 #   Absolute path to file containing the map definition. If none is provided
@@ -36,7 +36,7 @@ define autofs::indirect_map (
   $location,
   $ensure   = 'present',
   $key      = $name,
-  $options  = undef,
+  $options  = [],
   $map_file = undef,
 ) {
   include autofs
@@ -44,18 +44,22 @@ define autofs::indirect_map (
   validate_string($key)
   validate_absolute_path($location)
   validate_re($ensure, ['^present$', '^absent$'])
-  validate_string($options)
+  if $options != [] {
+    $_padded_opts = sprintf(' %s', join($options, ','))
+  } else {
+    $_padded_opts = ''
+  }
 
   if $map_file {
     $master_content = "+${map_file}"
     autofs::map_file { "autofs::indirect_map ${map_file}:${key}":
       ensure  => $ensure,
       path    => $map_file,
-      content => "${key} ${options} ${location}",
+      content => "${key}${_padded_opts} ${location}",
       before  => Concat::Fragment["autofs::indirect_map: ${master_content}"],
     }
   } else {
-    $master_content = "${location} ${key} ${options}"
+    $master_content = "${location} ${key}${_padded_opts}"
   }
 
   if ! defined(Concat::Fragment["autofs::indirect_map: ${master_content}"]) {

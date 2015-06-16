@@ -1,6 +1,6 @@
 autofs::indirect_map { 'test1':
   location => '/home',
-  options  => '-rw',
+  options  => ['rw'],
 }
 
 autofs::indirect_map { 'test2':

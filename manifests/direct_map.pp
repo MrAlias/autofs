@@ -18,7 +18,7 @@
 #   Defaults to `$name`.
 #
 # [*options*]
-#   String of mount options used in the map definition.
+#   Array of mount options used in the map definition.
 #
 # [*map_file*]
 #   Absolute path to file containing the direct map definition.
@@ -35,7 +35,7 @@ define autofs::direct_map (
   $location,
   $ensure     = 'present',
   $key        = $name,
-  $options    = undef,
+  $options    = [],
   $map_file   = undef,
 ) {
   include autofs
@@ -50,9 +50,8 @@ define autofs::direct_map (
     $map_path = "${autofs::map_files_dir}/auto.direct"
   }
 
-  if $options {
-    validate_string($options)
-    $content = "${key} ${options} ${location}"
+  if $options != [] {
+    $content = sprintf("${key} -%s ${location}", join($options, ','))
   } else {
     $content = "${key} ${location}"
   }
