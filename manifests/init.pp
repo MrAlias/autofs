@@ -42,7 +42,7 @@ class autofs (
   validate_string($package_name, $service_name)
   validate_absolute_path($auto_master)
 
-  package { $package_name :
+  package { $package_name:
     ensure => installed,
     alias  => 'autofs',
   }
@@ -51,24 +51,22 @@ class autofs (
     ensure_packages($extra_packages)
   }
 
-  file { $map_files_dir :
+  file { $map_files_dir:
     ensure => directory,
     owner  => 'root',
     group  => 'root',
   }
 
-  concat { $auto_master :
+  concat { $auto_master:
     ensure  => present,
     warn    => true,
     require => Package['autofs'],
     notify  => Service['autofs'],
   }
 
-  service { $service_name :
+  service { $service_name:
     ensure => running,
     enable => true,
     alias  => 'autofs',
   }
-
-  File<| tag == 'map_file' |> ~> Service['autofs']
 }
