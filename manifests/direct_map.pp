@@ -12,7 +12,7 @@
 #
 #   Defaults to `present`.
 #
-# [*key*]
+# [*mount_point*]
 #   Absolute path where the direct map will mount the location.
 #
 #   Defaults to `$name`.
@@ -33,15 +33,15 @@
 #
 define autofs::direct_map (
   $location,
-  $ensure     = 'present',
-  $key        = $name,
-  $options    = [],
-  $map_file   = undef,
+  $ensure      = 'present',
+  $mount_point = $name,
+  $options     = [],
+  $map_file    = undef,
 ) {
   include autofs
 
   validate_string($location)
-  validate_absolute_path($key)
+  validate_absolute_path($mount_point)
   validate_re($ensure, ['^present$', '^absent$'])
 
   if $map_file {
@@ -51,22 +51,24 @@ define autofs::direct_map (
   }
 
   if $options != [] {
-    $content = sprintf("${key} -%s ${location}", join($options, ','))
+    $content = sprintf("${mount_point} -%s ${location}", join($options, ','))
   } else {
-    $content = "${key} ${location}"
+    $content = "${mount_point} ${location}"
   }
 
-  autofs::map_file { "autofs::direct_map ${map_path}":
+  autofs::map_file { "autofs::direct_map ${map_path}:${content}":
     ensure  => $ensure,
     path    => $map_path,
     content => $content,
   }
 
-  concat::fragment { "autofs::direct_map ${map_path}:${content}":
-    ensure  => $ensure,
-    target  => $autofs::auto_master,
-    content => "/- ${map_path}",
-    require => Autofs::Map_file["autofs::direct_map ${map_path}"],
-    notify  => Service['autofs'],
+  if ! defined(Autofs::Master_map["autofs::direct_map ${map_path}"]) {
+    autofs::master_map { "autofs::direct_map ${map_path}":
+      ensure      => $ensure,
+      mount_point => '/-',
+      map_name    => $map_path,
+      require     => Autofs::Map_file["autofs::direct_map ${map_path}:${content}"],
+      notify      => Service['autofs'],
+    }
   }
 }
