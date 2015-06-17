@@ -14,6 +14,38 @@
 #
 #   Defaults to `$name`.
 #
+# [*owner*]
+#   Specifies the user who owns the destination file.
+#
+#   Valid options: a string containing a user name.
+#
+#   Default value: `'root'`.
+#
+# [*group*]
+#   Specifies the group owner of the destination file.
+#
+#   Valid options: a string containing a group name.
+#
+#   Default value: `'root'`.
+#
+# [*mode*]
+#   Specifies the permissions mode of the map file.
+#
+#   Valid options: a string containing an octal notation mode.
+#
+#   Default value: `'0644'`.
+#
+# [*order*]
+#   Relative order the content will appear in the map file.
+#
+#   The ordering is numeric and any maps that share the same order number
+#   are ordered by name.
+#
+#   Valid values are a string or an integer.
+#
+#   Defaults to '10'.
+#
+#
 # [*content*]
 #   Content to add to the map file.
 #
@@ -26,8 +58,12 @@
 # Copyright 2015 Tyler Yahn
 #
 define autofs::map_file (
-  $ensure  = 'present',
   $path    = $name,
+  $ensure  = 'present',
+  $owner   = 'root',
+  $group   = 'root',
+  $mode    = '0644',
+  $order   = '10',
   $content = undef,
 ) {
   include autofs
@@ -38,11 +74,14 @@ define autofs::map_file (
 
   if ! defined(Concat[$path]) {
     concat { $path:
-      ensure => $ensure,
-      owner  => 'root',
-      group  => 'root',
-      mode   => '0644',
-      warn   => true,
+      ensure         => $ensure,
+      owner          => $owner,
+      group          => $group,
+      mode           => $mode,
+      warn           => true,
+      ensure_newline => true,
+      force          => true,
+      order          => 'numeric',
     }
   }
 
@@ -51,6 +90,7 @@ define autofs::map_file (
       ensure  => $ensure,
       target  => $path,
       content => $content,
+      order   => $order,
       notify  => Service['autofs'],
     }
   }
