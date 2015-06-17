@@ -131,7 +131,7 @@ autofs::master_map { 'include misc mounts':
 
 autofs::map_file { 'Custom misc maps':
   ensure  => present,
-  path    => /etc/auto.misc',
+  path    => '/etc/auto.misc',
   content => ' ... '
 }
 ```
