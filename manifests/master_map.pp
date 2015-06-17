@@ -5,7 +5,7 @@
 # === Parameters
 #
 # [*mount_point*]
-#   Requrired parameter defining the base location for the autofs filesystem
+#   Required parameter defining the base location for the autofs filesystem
 #   to be mounted.
 #
 # [*map_name*]
@@ -26,7 +26,8 @@
 # [*order*]
 #   Relative order the map will appean in the master map file.
 #
-#   Any maps that share the same order number are ordered by name.
+#   The ordering is numeric and any maps that share the same order number
+#   are ordered by name.
 #
 #   Valid values are a string or an integer.
 #
