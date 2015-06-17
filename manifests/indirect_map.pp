@@ -5,7 +5,10 @@
 # === Parameters
 #
 # [*location*]
-#   Absolute path to location on the file system the map connects to.
+#   Address of the filesystem to mount.
+#
+# [*mount_point*]
+#   Absolute local path to the head of where the indirect map(s) are located.
 #
 # [*ensure*]
 #   State the map should be.  Valid values are `present` and `absent`.
@@ -15,6 +18,8 @@
 # [*key*]
 #   Simple name for the map.
 #
+#   The indirect map will mount the `location` at `/mount_point/key`.
+#
 #   Defaults to `$name`.
 #
 # [*options*]
@@ -22,7 +27,8 @@
 #
 # [*map_file*]
 #   Absolute path to file containing the map definition. If none is provided
-#   the map will be defined in the master autofs template.
+#   the map will be defined in a create file named after the basename of the
+#   mountpoint prefixed by **auto.** withing the `autofs::map_files_dir`.
 #
 # === Authors
 #
@@ -34,40 +40,44 @@
 #
 define autofs::indirect_map (
   $location,
-  $ensure   = 'present',
-  $key      = $name,
-  $options  = [],
-  $map_file = undef,
+  $mount_point,
+  $ensure      = 'present',
+  $key         = $name,
+  $options     = [],
+  $map_file    = undef,
 ) {
   include autofs
 
-  validate_string($key)
-  validate_absolute_path($location)
+  validate_string($location, $key)
+  validate_absolute_path($mount_point)
   validate_re($ensure, ['^present$', '^absent$'])
-  if $options != [] {
-    $_padded_opts = sprintf(' %s', join($options, ','))
-  } else {
-    $_padded_opts = ''
-  }
 
   if $map_file {
-    $master_content = "+${map_file}"
-    autofs::map_file { "autofs::indirect_map ${map_file}:${key}":
-      ensure  => $ensure,
-      path    => $map_file,
-      content => "${key}${_padded_opts} ${location}",
-      before  => Concat::Fragment["autofs::indirect_map: ${master_content}"],
-    }
+    $map_path = $map_file
   } else {
-    $master_content = "${location} ${key}${_padded_opts}"
+    $basename = basename($mount_point)
+    $map_path = "${autofs::map_files_dir}/auto.${basename}"
   }
 
-  if ! defined(Concat::Fragment["autofs::indirect_map: ${master_content}"]) {
-    concat::fragment { "autofs::indirect_map: ${master_content}":
-      ensure  => $ensure,
-      target  => $autofs::auto_master,
-      content => $master_content,
-      notify  => Service['autofs'],
+  if $options != [] {
+    $content = sprintf("${key} -%s ${location}", join($options, ','))
+  } else {
+    $content = "${key} ${location}"
+  }
+
+  autofs::map_file { "autofs::indirect_map ${map_path}:${content}":
+    ensure  => $ensure,
+    path    => $map_path,
+    content => $content,
+  }
+
+  if ! defined(Autofs::Master_map["autofs::indirect_map ${map_path}"]) {
+    autofs::master_map { "autofs::indirect_map ${map_path}":
+      ensure      => $ensure,
+      mount_point => $mount_point,
+      map_name    => $map_path,
+      require     => Autofs::Map_file["autofs::indirect_map ${map_path}:${content}"],
+      notify      => Service['autofs'],
     }
   }
 }
