@@ -3,14 +3,14 @@ autofs::master_map { 'demos':
 }
 
 autofs::master_map { 'direct mounts':
-  mount_point   => '/-',
-  map_name      => '/etc/auto.direct',
-  mount_options => ['rw', 'hard', 'intr'],
+  mount_point => '/-',
+  map_name    => '/etc/auto.direct',
+  options     => ['rw', 'hard', 'intr'],
 }
 
 autofs::master_map { 'include misc mounts':
-  mount_point   => '+',
-  map_name      => '/etc/auto.misc',
+  mount_point => '+',
+  map_name    => '/etc/auto.misc',
 }
 
 autofs::master_map { 'make sure there are no /usr mounts':
@@ -20,15 +20,9 @@ autofs::master_map { 'make sure there are no /usr mounts':
 }
 
 autofs::master_map { 'LDAP mounts last':
-  order                       => '100',
-  mount_point                 => '/home',
-  map_name                    => 'ou=home,ou=autofs,dc=ted',
-  map_type                    => 'ldap',
-  format                      => 'sun',
-  variable_substitutions      => {'test_variable' => 'test_value'},
-  strict                      => true,
-  random_multimount_selection => true,
-  use_weight_only             => true,
-  timeout                     => 100,
-  negative_timeout            => 300,
+  order       => '100',
+  mount_point => '/home',
+  map_name    => 'ou=home,ou=autofs,dc=ted',
+  map_type    => 'ldap',
+  format      => 'sun',
 }
