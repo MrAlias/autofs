@@ -95,27 +95,27 @@ Manages the autofs package, templates, and service.
 
 ##### `autofs::direct_map::package_name`
 
-  Name of the distribution specific autofs package.
+Name of the distribution specific autofs package.
 
 ##### `autofs::direct_map::extra_packages`
 
-  Array of packages to install.
+Array of packages to install.
 
-  By default only the autofs packages is manages by this module.  If extra support is desired for autofs (like LDAP or Hesiod), then the needed packages (i.e. autofs-hesiod, autofs-ldap, ... ) can be specified here.
+By default only the autofs packages is manages by this module.  If extra support is desired for autofs (like LDAP or Hesiod), then the needed packages (i.e. autofs-hesiod, autofs-ldap, ... ) can be specified here.
 
 ##### `autofs::direct_map::auto_master`
 
-  Absolute file path where the master autofs template is located.
+Absolute file path where the master autofs template is located.
 
 ##### `autofs::direct_map::map_files_dir`
 
-  Absolute file path where the autofs map files are located.
+Absolute file path where the autofs map files are located.
 
-  This directory is not managed by this module, but is assumed to exist and be accessable as autofs map file will be put there.
+This directory is not managed by this module, but is assumed to exist and be accessable as autofs map file will be put there.
 
 ##### `autofs::direct_map::service_name`
 
-  Name of the distribution specific autofs service.
+Name of the distribution specific autofs service.
 
 ### Defined Types
 
@@ -125,27 +125,27 @@ Defines an AutoFS direct map.
 
 ##### `autofs::direct_map::location`
 
-  String defining the location from where the file system is to be mounted.
+String defining the location from where the file system is to be mounted.
 
 ##### `autofs::direct_map::ensure`
 
-  State to ensure of map.  Valid values are `present` and `absent`.
+State to ensure of map.  Valid values are `present` and `absent`.
 
-  Defaults to `present`.
+Defaults to `present`.
 
 ##### `autofs::direct_map::mount_point`
 
-  Absolute path where the direct map will mount the location.
+Absolute path where the direct map will mount the location.
 
-  Defaults to `$name`.
+Defaults to `$name`.
 
 ##### `autofs::direct_map::options`
 
-  Array of mount options used in the map definition.
+Array of mount options used in the map definition.
 
 ##### `autofs::direct_map::map_file`
 
-  Absolute path to file containing the direct map definition.
+Absolute path to file containing the direct map definition.
 
 #### autofs::indirect_map
 
@@ -153,147 +153,146 @@ Defines an AutoFS indirect map.
 
 ##### `autofs::direct_map::location`
 
-  Address of the filesystem to mount.
+Address of the filesystem to mount.
 
 ##### `autofs::direct_map::mount_point`
 
-  Absolute local path to the head of where the indirect map(s) are located.
+Absolute local path to the head of where the indirect map(s) are located.
 
 ##### `autofs::direct_map::ensure`
 
-  State the map should be.  Valid values are `present` and `absent`.
+State the map should be.  Valid values are `present` and `absent`.
 
-  Defaults to `present`.
+Defaults to `present`.
 
 ##### `autofs::direct_map::key`
 
-  Simple name for the map.
+Simple name for the map.
 
-  The indirect map will mount the `location` at `/mount_point/key`.
+The indirect map will mount the `location` at `/mount_point/key`.
 
-  Defaults to `$name`.
+Defaults to `$name`.
 
 ##### `autofs::direct_map::options`
 
-  Array of mount options used in the map definition.
+Array of mount options used in the map definition.
 
 ##### `autofs::direct_map::map_file`
 
-  Absolute path to file containing the map definition. If none is provided the map will be defined in a create file named after the basename of the mountpoint prefixed by **auto.** withing the `autofs::map_files_dir`.
+Absolute path to file containing the map definition. If none is provided the map will be defined in a create file named after the basename of the mountpoint prefixed by **auto.** withing the `autofs::map_files_dir`.
 
-#### autofs::master_map
+#### autofs::master\_map
 
 Defines an autofs map in the master map file.
 
 ##### `autofs::direct_map::mount_point`
 
-  Required parameter defining the base location for the autofs filesystem to be mounted.
+Required parameter defining the base location for the autofs filesystem to be mounted.
 
 ##### `autofs::direct_map::map_name`
 
-  Name of the map to use.
+Name of the map to use.
 
-  This is an absolute UNIX pathname for maps of types `file` or `program`, and the name of a database in the case for maps of type `yp`, `nisplus`, or `hesiod`, or the dn of an LDAP entry for maps of type `ldap` or `ldaps`.
+This is an absolute UNIX pathname for maps of types `file` or `program`, and the name of a database in the case for maps of type `yp`, `nisplus`, or `hesiod`, or the dn of an LDAP entry for maps of type `ldap` or `ldaps`.
 
-  Defaults to `$name`.
+Defaults to `$name`.
 
 ##### `autofs::direct_map::ensure`
 
-  State the specified map is in.  Valid values are `present` and `absent`.
+State the specified map is in.  Valid values are `present` and `absent`.
 
-  Defaults to `present`.
+Defaults to `present`.
 
 ##### `autofs::direct_map::order`
 
-  Relative order the map will appean in the master map file.
+Relative order the map will appean in the master map file.
 
-  The ordering is numeric and any maps that share the same order number are ordered by name.
+The ordering is numeric and any maps that share the same order number are ordered by name.
 
-  Valid values are a string or an integer.
+Valid values are a string or an integer.
 
-  Defaults to '10'.
+Defaults to '10'.
 
 ##### `autofs::direct_map::map_type`
 
-  The autofs map type.
+The autofs map type.
 
-  Valid values are: `file`, `program`, `yp`, `nisplus`, `hesiod`, `ldap`,
-  or `ldaps'.
+Valid values are: `file`, `program`, `yp`, `nisplus`, `hesiod`, `ldap`, or `ldaps'.
 
-  Defaults to `file`.
+Defaults to `file`.
 
-##### `autofs::direct_map::format`
+##### `autofs::direct\_map::format`
 
-  The format of the map data.
+The format of the map data.
 
-  Valid values are: `sun`, or `hesiod`.
+Valid values are: `sun`, or `hesiod`.
 
-  Defaults to `sun`.
+Defaults to `sun`.
 
-##### `autofs::direct_map::options`
+##### `autofs::direct\_map::options`
 
-  Array of mount and map options.
+Array of mount and map options.
 
-  Options without leading dashes (-) are taken as options (-o) to mount.  Options with leading dashes are considered options for the maps.
+Options without leading dashes (-) are taken as options (-o) to mount.  Options with leading dashes are considered options for the maps.
 
-#### autofs::map_file
+#### autofs::map\_file
 
 Creates and manages content for an autofs map file.
 
 ##### `autofs::direct_map::ensure`
 
-  State of the map file.  Valid values are `present` and `absent`.
+State of the map file.  Valid values are `present` and `absent`.
 
-  Defaults to `present`.
+Defaults to `present`.
 
 ##### `autofs::direct_map::path`
 
-  Absolute path to the location of the map file to manage.
+Absolute path to the location of the map file to manage.
 
-  Defaults to `$name`.
+Defaults to `$name`.
 
 ##### `autofs::direct_map::owner`
 
-  Specifies the user who owns the destination file.
+Specifies the user who owns the destination file.
 
-  Valid options: a string containing a user name.
+Valid options: a string containing a user name.
 
-  Default value: `'root'`.
+Default value: `'root'`.
 
 ##### `autofs::direct_map::group`
 
-  Specifies the group owner of the destination file.
+Specifies the group owner of the destination file.
 
-  Valid options: a string containing a group name.
+Valid options: a string containing a group name.
 
-  Default value: `'root'`.
+Default value: `'root'`.
 
 ##### `autofs::direct_map::mode`
 
-  Specifies the permissions mode of the map file.
+Specifies the permissions mode of the map file.
 
-  Valid options: a string containing an octal notation mode.
+Valid options: a string containing an octal notation mode.
 
-  Default value: `'0644'`.
+Default value: `'0644'`.
 
 ##### `autofs::direct_map::order`
 
-  Relative order the content will appear in the map file.
+Relative order the content will appear in the map file.
 
-  The ordering is numeric and any maps that share the same order number
+The ordering is numeric and any maps that share the same order number
   are ordered by name.
 
-  Valid values are a string or an integer.
+Valid values are a string or an integer.
 
-  Defaults to '10'.
+Defaults to '10'.
 
 ##### `autofs::direct_map::content`
 
-  Content to add to the map file.
+Content to add to the map file.
 
 ##### `autofs::map_file::content`
 
-  Content to add to the map file.
+Content to add to the map file.
 
 ## Limitations
 
