@@ -53,10 +53,16 @@ class autofs (
   }
 
   concat { $auto_master:
-    ensure  => present,
-    warn    => true,
-    require => Package['autofs'],
-    notify  => Service['autofs'],
+    ensure         => present,
+    owner          => 'root',
+    group          => 'root',
+    mode           => '0644',
+    warn           => true,
+    ensure_newline => true,
+    force          => true,
+    order          => 'numeric',
+    require        => Package['autofs'],
+    notify         => Service['autofs'],
   }
 
   service { $service_name:
