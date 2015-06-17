@@ -29,7 +29,7 @@ AutoFS is a linux package that manages the automount daemons.  It provides a uni
 
 ### Beginning with autofs
 
-In order to get a basic instance of AutoFS running with OS default settings:
+In order to get a basic instance of AutoFS running:
 
 ```puppet
 include autofs
@@ -37,25 +37,25 @@ include autofs
 
 ## Usage
 
-### LDAP support on Debian
+### Extra support on Debian
 
-You can specify additional packages for the main `autofs` class to install, thereby adding extra functionality to the autofs utility.  One extension is LDAP support.  To add this on Debian:
+You can specify additional packages for the main `autofs` class to install, thereby adding extra functionality to the autofs utility.  An example of this would be adding LDAP and hesiod support on Debian:
 
 ```puppet
 class { 'autofs':
-  extra_packages => ['autofs-ldap'],
+  extra_packages => ['autofs-ldap', 'autofs-hesiod'],
 }
 ```
 
-### Adding a direct maps
+### Adding direct maps
 
-AutoFS allows a direct map between a mount point (`key`), and a filesystem (`location`).
+AutoFS allows a direct map between a local mount point (`mount_point`), and a filesystem (`location`).
 
 ```puppet
 autofs::direct_map { 'Backups Drive':
-  location => '/dev/sdb1',
-  options  => ['rw'],
-  key      => '/backups',
+  location    => 'backups:/global_backups',
+  options     => ['rw'],
+  mount_point => '/backups',
 }
 ```
 
@@ -63,7 +63,7 @@ This will add a map definition to the `/etc/auto.direct` map file by default.  I
 
 ```puppet
 autofs::direct_map { '/private':
-  location => '/dev/sdc1',
+  location => 'castle:/secrets',
   options  => ['ro'],
   map_file => '/etc/auto.private',
 }
@@ -71,19 +71,74 @@ autofs::direct_map { '/private':
 
 ### Adding indirect maps
 
-TODO
-Indirect maps use a key to associate a mount point with a directory.
+Indirect maps use a key to associate a mount point with a directory.  In contrast to the `autofs::direct_map` resource, both a `key` (which defaults to `$name`) and `mount_point` need to be specified.
 
 ```puppet
-autofs::indirect_map { 'Sensitive Data':
-  location => 'home-server:/home/toby',
-  options  => ['nosuid', 'nobrowse'],
-  key      => 'toby',
-  map_file => '/etc/auto.home',
+autofs::indirect_map { 'kernel':
+  mount_point => '/mnt',
+  location    => 'ftp.kernel.org:/pub/linux',
+  options     => ['ro', 'soft', 'intr'],
+}
+
+autofs::indirect_map { 'boot':
+  mount_point => '/mnt',
+  location    => ':/dev/hda1',
+  options     => ['fstype=ext2'],
 }
 ```
 
-Given that `map_file` was specified, this will create a map to the map file where the desired indirect maps can be defined using `autofs::map_file`.
+This will create two indirect maps in a default map file `/etc/auto.mnt` and setup the needed map definitions in the master map file.  If a different map file is wanted for either or both, similarly to the `autofs::direct_map` you can specify `map_file`.
+
+### Custom master maps
+
+In order to directly create a master map you can use the `autofs::master_map` defined type:
+
+```puppet
+autofs::master_map { 'include misc mounts':
+  order       => '99',
+  mount_point => '+',
+  map_name    => '/etc/auto.misc',
+}
+
+autofs::master_map { 'LDAP mounts last':
+  order       => '100',
+  mount_point => '/home',
+  map_name    => 'ou=home,ou=autofs,dc=ted',
+  map_type    => 'ldap',
+  format      => 'sun',
+}
+```
+
+This will add the following entries into the master autofs map file:
+
+```
+...
++/etc/auto.misc
+/home ldap,sun:ou=home,ou=autofs,dc=ted
+...
+```
+
+### Going beyond
+
+If for some reason you find this modules defined types to restrictive and need to add specific entries in map files that are not supported you can directly use the `autofs::map_file` defined type.
+
+```puppet
+autofs::master_map { 'include misc mounts':
+  order       => '99',
+  mount_point => '+',
+  map_name    => '/etc/auto.misc',
+}
+
+autofs::map_file { 'Custom misc maps':
+  ensure  => present,
+  path    => /etc/auto.misc',
+  content => ' ... '
+}
+```
+
+This example adds the custom content to the `/etc/auto.misc` map file and, similar to before, adds the appropriate master map entry.
+
+This defined type is intended to account for unforseen use.  Likely you do not need to use this.
 
 ## Reference
 
@@ -181,7 +236,7 @@ Array of mount options used in the map definition.
 
 Absolute path to file containing the map definition. If none is provided the map will be defined in a create file named after the basename of the mountpoint prefixed by **auto.** withing the `autofs::map_files_dir`.
 
-#### autofs::master\_map
+#### autofs::master_map
 
 Defines an autofs map in the master map file.
 
@@ -221,7 +276,7 @@ Valid values are: `file`, `program`, `yp`, `nisplus`, `hesiod`, `ldap`, or `ldap
 
 Defaults to `file`.
 
-##### `autofs::direct\_map::format`
+##### `autofs::direct_map::format`
 
 The format of the map data.
 
@@ -229,13 +284,13 @@ Valid values are: `sun`, or `hesiod`.
 
 Defaults to `sun`.
 
-##### `autofs::direct\_map::options`
+##### `autofs::direct_map::options`
 
 Array of mount and map options.
 
 Options without leading dashes (-) are taken as options (-o) to mount.  Options with leading dashes are considered options for the maps.
 
-#### autofs::map\_file
+#### autofs::map_file
 
 Creates and manages content for an autofs map file.
 
