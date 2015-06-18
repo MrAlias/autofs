@@ -78,9 +78,9 @@ define autofs::master_map (
 
   if ($mount_point != '/-') and ($mount_point != '+') and ($mount_point != '') {
     validate_absolute_path($mount_point)
-    $_mnt_pt = "$mount_point "
+    $_mnt_pt = "${mount_point} "
   } elsif $mount_point == '/-' {
-    $_mnt_pt = "$mount_point "
+    $_mnt_pt = "${mount_point} "
   } elsif $mount_point == '+' {
     $_mnt_pt = $mount_point
   } else {
